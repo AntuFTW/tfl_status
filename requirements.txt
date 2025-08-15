@@ -5,3 +5,4 @@ create-dagster
 duckdb
 pandas
 numpy
+dagster-duckdb
