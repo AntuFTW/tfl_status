@@ -101,8 +101,15 @@ def crowding_data(db_conn: DuckDBResource) -> None:
         (naptan_id, time_recorded_utc, crowding_level)
     VALUES
         (?, ?, ?)
+    ON CONFLICT
+        (naptan_id, time_recorded_utc)
+    DO NOTHING
     """
 
-    with db_conn.get_connection() as conn:
-        conn.executemany(query_insert_into_crowding, data_to_insert)
-        conn.commit()
+    if data_to_insert:
+        with db_conn.get_connection() as conn:
+            print(f'The data which will be inserted: {data_to_insert}')
+            conn.executemany(query_insert_into_crowding, data_to_insert)
+            conn.commit()
+    else:
+        print('No data to be inserted')
