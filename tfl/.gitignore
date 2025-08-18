@@ -204,3 +204,6 @@ __marimo__/
 
 # Database
 *tfl_db*
+
+# Images
+*.png

@@ -4,11 +4,10 @@ import duckdb as db
 from dagster_duckdb import DuckDBResource
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 @dg.asset()
-def naptan_table(db_conn: DuckDBResource) -> None:
+def create_naptan_table(db_conn: DuckDBResource) -> None:
     query_create_table = """
-    CREATE or replace table station_naptan (
+    CREATE table if not exists station_naptan (
     naptan_id VARCHAR,
     station_name VARCHAR,
     entrance VARCHAR,
@@ -16,6 +15,14 @@ def naptan_table(db_conn: DuckDBResource) -> None:
     )
     """
 
+    with db_conn.get_connection() as conn:
+        conn.execute(query_create_table)
+
+
+@dg.asset(
+    deps=['create_naptan_table']
+)
+def naptan_table(db_conn: DuckDBResource) -> None:
     station_list = []
 
     res = rq.get('https://api.tfl.gov.uk/StopPoint/Mode/tube', timeout=30, verify=False).json()
@@ -35,16 +42,13 @@ def naptan_table(db_conn: DuckDBResource) -> None:
     """
 
     with db_conn.get_connection() as conn:
-        conn.execute(query_create_table)
         conn.executemany(query_insert_to_naptan, station_list)
         conn.commit()
     
-@dg.asset(
-    deps=['naptan_table']    
-)
+@dg.asset()
 def create_crowding_table(db_conn: DuckDBResource) -> None:
     query_to_create_table = """
-    CREATE or replace table crowding_data (
+    CREATE table if not exists crowding_data (
         naptan_id VARCHAR,
         time_recorded_utc DATETIME,
         crowding_level FLOAT,
