@@ -3,7 +3,7 @@ import duckdb as db
 from dagster_duckdb import DuckDBResource
 
 database_resource = DuckDBResource(
-    database='../../../tfl_db.db'      # replaced with environment variable
+    database=r'C:\Users\APatel1\Documents\dagster-capstone\tfl_status\tfl\tfl_db.db'      # replaced with environment variable
 )
 
 
